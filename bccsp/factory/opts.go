@@ -33,3 +33,15 @@ func GetDefaultOpts() *FactoryOpts {
 func (o *FactoryOpts) FactoryName() string {
 	return o.ProviderName
 }
+// GetGMOpts offers a GM implementation for Opts
+func GetGMOpts() *FactoryOpts {
+	return &FactoryOpts{
+		ProviderName: "GM",
+		SwOpts: &SwOpts{
+			HashFamily: "GMSM3",
+			SecLevel:   256,
+
+			Ephemeral: true,
+		},
+	}
+}
