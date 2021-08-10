@@ -247,8 +247,11 @@ func GenerateVerifyingMSP(baseDir string, signCA *ca.CA, tlsCA *ca.CA, nodeOUs b
 
 
 	if gm.IsX509SM2Certificate(signCA.SignCert) {
-		factory.InitFactories(factory.GetGMOpts())
-		bcsp := factory.GetDefault()
+		f := &factory.GMFactory{}
+		bcsp, err := f.Get(factory.GetGMOpts())
+		if err != nil {
+			return err
+		}
 		priv, err := bcsp.KeyGen(&bccsp.GMSM2KeyGenOpts{Temporary: true})
 		sm2PubKey, err := csp.GetSM2PublicKey(priv)
 		if err != nil {
@@ -260,8 +263,11 @@ func GenerateVerifyingMSP(baseDir string, signCA *ca.CA, tlsCA *ca.CA, nodeOUs b
 			return err
 		}
 	} else {
-		factory.InitFactories(factory.GetDefaultOpts())
-		bcsp := factory.GetDefault()
+		f := &factory.SWFactory{}
+		bcsp, err := f.Get(factory.GetDefaultOpts())
+		if err != nil {
+			return err
+		}
 		priv, err := bcsp.KeyGen(&bccsp.ECDSAP256KeyGenOpts{Temporary: true})
 		ecPubKey, err := csp.GetECPublicKey(priv)
 		if err != nil {
