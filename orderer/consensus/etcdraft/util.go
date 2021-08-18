@@ -11,6 +11,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	x509GM "github.com/Hyperledger-TWGC/tjfoc-gm/x509"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -438,7 +439,9 @@ func validateCert(pemData []byte, certRole string) error {
 	}
 
 	if _, err := x509.ParseCertificate(bl.Bytes); err != nil {
-		return errors.Errorf("%s TLS certificate has invalid ASN1 structure, %v: %s", certRole, err, string(pemData))
+		if _, err := x509GM.ParseCertificate(bl.Bytes); err != nil {
+			return errors.Errorf("%s TLS certificate has invalid ASN1 structure, %v: %s", certRole, err, string(pemData))
+		}
 	}
 	return nil
 }

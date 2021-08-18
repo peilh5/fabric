@@ -12,7 +12,10 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+	"strings"
+	"io/ioutil"
 
+	//"github.com/hyperledger/fabric/bccsp/utils"
 	x509GM "github.com/Hyperledger-TWGC/tjfoc-gm/x509"
 	"github.com/hyperledger/fabric/common/tools/cryptogen/csp"
 )
@@ -39,7 +42,7 @@ func x509GMTemplate() x509GM.Certificate {
 	return x509
 }
 
-// generate a signed X509 certificate using ECDSA
+// generate a signed X509 certificate using SM2
 func genCertificateSM2(baseDir, name string, template, parent *x509GM.Certificate, pub *sm2.PublicKey,
 	signer crypto.Signer) (*x509GM.Certificate, error) {
 
@@ -70,6 +73,32 @@ func genCertificateSM2(baseDir, name string, template, parent *x509GM.Certificat
 
 	return x509Cert, nil
 }
+
+//LoadCertificateSM2
+func LoadCertificateSM2(certPath string) (*x509GM.Certificate, error) {
+	var cert *x509GM.Certificate
+	var err error
+
+	walkFunc := func(path string, info os.FileInfo, err error) error {
+		if strings.HasSuffix(path, ".pem") {
+			rawCert, err := ioutil.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			block, _ := pem.Decode(rawCert)
+			cert,err =x509GM.ParseCertificate(block.Bytes)
+		}
+		return nil
+	}
+
+	err = filepath.Walk(certPath, walkFunc)
+	if err != nil {
+		return nil, err
+	}
+
+	return cert, err
+}
+
 
 func (ca *CA) SignGMCertificate(baseDir, name string, ous, sans []string, pub *sm2.PublicKey,
 	ku x509GM.KeyUsage, eku []x509GM.ExtKeyUsage) (*x509.Certificate, error) {
@@ -160,3 +189,4 @@ func NewGMCA(baseDir, org, name, country, province, locality, orgUnit, streetAdd
 	}
 	return ca, response
 }
+
